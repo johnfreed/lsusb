@@ -1,12 +1,12 @@
 //
-//  main.c
+//  lsusb.m
 //  lsusb-iokit
 //
-//  Created by JLH on 9/11/13.
-//  Copyright (c) 2013 JLH. All rights reserved.
+//  Created by John Freed on 15 March 2014.
 //
 // Based on http://stackoverflow.com/questions/7567872/how-to-create-a-program-to-list-all-the-usb-devices-in-a-mac
 // and http://lists.apple.com/archives/usb/2007/Nov/msg00038.html
+// and work by J.L. Honora
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreFoundation/CFString.h>
@@ -14,12 +14,14 @@
 #include <IOKit/usb/IOUSBLib.h>
 #include <IOKit/usb/USB.h>
 #include <IOKit/IOCFPlugIn.h>
+#include <Foundation/Foundation.h>
 
 void process_usb_device(io_service_t * device);
 static bool getVidAndPid(io_service_t * device, int *vid, int *pid);
 char * getVendorName(io_service_t * device);
 char * getSerialNumber(io_service_t * device);
 int getDeviceAddress(io_service_t * device);
+char * getVendorNameFromVendorID(NSString * intValueAsString);
 
 int main(int argc, const char *argv[])
 {
@@ -67,6 +69,9 @@ typedef struct USBDevice_t {
 void process_usb_device(io_service_t * device) {
     USBDevice d;
     IORegistryEntryGetName(*device, d.deviceName);
+    if(!strcmp(d.deviceName,"HubDevice")) {
+        strcpy(d.deviceName, "Hub");
+    }
     getVidAndPid(device, &(d.vid), &(d.pid));
     d.manufacturer = getVendorName(device);
     d.serial = getSerialNumber(device);
@@ -79,32 +84,75 @@ void process_usb_device(io_service_t * device) {
 }
 
 static bool getVidAndPid(io_service_t * device, int *vid, int *pid) {
-	bool success = false;
-	CFNumberRef	cfVendorId = (CFNumberRef)IORegistryEntryCreateCFProperty(*device, CFSTR("idVendor"), kCFAllocatorDefault, 0);
-	if (cfVendorId && (CFGetTypeID(cfVendorId) == CFNumberGetTypeID()))	{
-		Boolean result;
-		result = CFNumberGetValue(cfVendorId, kCFNumberSInt32Type, vid);
+	bool success;
+	CFNumberRef cfVendorId = (CFNumberRef)IORegistryEntryCreateCFProperty(*device, CFSTR("idVendor"), kCFAllocatorDefault, 0);
+	if (cfVendorId && (CFGetTypeID(cfVendorId) == CFNumberGetTypeID())) {
+		success = CFNumberGetValue(cfVendorId, kCFNumberSInt32Type, vid);
 		CFRelease(cfVendorId);
-		if (result) {
-			CFNumberRef	cfProductId = (CFNumberRef)IORegistryEntryCreateCFProperty(*device,                                      CFSTR("idProduct"), kCFAllocatorDefault, 0);
-			if (cfProductId && (CFGetTypeID(cfProductId) == CFNumberGetTypeID())) {
-				Boolean result;
-				result = CFNumberGetValue(cfProductId,
-                                          kCFNumberSInt32Type, pid);
-				CFRelease(cfProductId);
-				if (result) {
-					success = true;
-				}
-			}
-		}
+		if (!success) {
+            return (success);
+        }
+    }
+	CFNumberRef cfProductId = (CFNumberRef) IORegistryEntryCreateCFProperty(*device, CFSTR("idProduct"), kCFAllocatorDefault, 0);
+	if (cfProductId && (CFGetTypeID(cfProductId) == CFNumberGetTypeID())) {
+		success = CFNumberGetValue(cfProductId, kCFNumberSInt32Type, pid);
+		CFRelease(cfProductId);
 	}
 	return (success);
 }
+
+char * getVendorNameFromVendorID(NSString * intValueAsString) {
+    static NSMutableDictionary * gVendorNamesDictionary = nil;
+    NSString *VendorName;
+    if (gVendorNamesDictionary == nil) {
+        gVendorNamesDictionary = [[NSMutableDictionary dictionary] init];
+        NSString *vendorListString = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"USBVendors" ofType:@"txt"] encoding:NSUTF8StringEncoding error:NULL];
+        
+        if (vendorListString == nil) {
+            NSLog(@"USB Prober: Error reading USBVendors.txt from the Resources directory");
+        } else {
+            NSArray *vendorsAndIDs = [vendorListString componentsSeparatedByString:@"\n"];
+            if (vendorsAndIDs == nil) {
+                NSLog(@"USB Prober: Error parsing USBVendors.txt");
+            } else {
+                NSEnumerator *enumerator = [vendorsAndIDs objectEnumerator];
+                NSString *vendorIDCombo;
+                NSArray *aVendor;
+                while ((vendorIDCombo = [enumerator nextObject])) {
+                    aVendor = [vendorIDCombo componentsSeparatedByString:@"|"];
+                    if (aVendor == nil || [aVendor count] < 2) {
+                        continue;
+                    }
+                    [gVendorNamesDictionary setObject:[aVendor objectAtIndex:1] forKey:[aVendor objectAtIndex:0]];
+                }
+            }
+        }
+    }
+    
+   VendorName = [gVendorNamesDictionary objectForKey:intValueAsString];
+    
+//NSLog(@"%@",VendorName);
+    return (char *) CFStringGetCStringPtr((CFStringRef)VendorName, kCFStringEncodingMacRoman);
+    
+}
+
 char * getVendorName(io_service_t * device) {
     if(!device) return NULL;
-    CFStringRef vendorName = IORegistryEntryCreateCFProperty(*device, CFSTR("USB Vendor Name"), kCFAllocatorDefault, 0);
+    
+    USBDevice d;
+    CFStringRef vendorName;
+    NSMutableString  *nsVendorName = [NSMutableString string];
+    getVidAndPid(device, &(d.vid), &(d.pid));
+    if (d.vid) {
+        //look up VID in table, and return name if found, otherwise fall through to device's vendor name field
+       return getVendorNameFromVendorID([NSString stringWithFormat:@"%d", d.vid ]);
+    } else {
+        return NULL;
+    }
+    vendorName = IORegistryEntryCreateCFProperty(*device, CFSTR("USB Vendor Name"), kCFAllocatorDefault, 0);
     return (char *) CFStringGetCStringPtr(vendorName, kCFStringEncodingMacRoman);
 }
+
 
 char * getSerialNumber(io_service_t * device) {
     if(!device) return NULL;

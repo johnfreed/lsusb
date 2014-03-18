@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5245792018D4AB5E00DEE6D0 /* lsusb.m in Sources */ = {isa = PBXBuildFile; fileRef = 5245791F18D4AB5E00DEE6D0 /* lsusb.m */; };
+		52521F8A18D70B61006669A1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52521F8918D70B61006669A1 /* Foundation.framework */; };
 		D8D5ABF817E265530029F7E4 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8D5ABF717E265530029F7E4 /* CoreFoundation.framework */; };
-		D8D5ABFB17E265530029F7E4 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D8D5ABFA17E265530029F7E4 /* main.c */; };
 		D8D5ABFD17E265530029F7E4 /* lsusb_iokit.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8D5ABFC17E265530029F7E4 /* lsusb_iokit.1 */; };
 		D8D5AC0417E267D30029F7E4 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8D5AC0317E267D30029F7E4 /* IOKit.framework */; };
 /* End PBXBuildFile section */
@@ -27,9 +28,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5245791F18D4AB5E00DEE6D0 /* lsusb.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = lsusb.m; sourceTree = "<group>"; };
+		52521F8618D709B0006669A1 /* USBVendors.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = USBVendors.txt; sourceTree = "<group>"; };
+		52521F8918D70B61006669A1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D8D5ABF417E265530029F7E4 /* lsusb-iokit */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "lsusb-iokit"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8D5ABF717E265530029F7E4 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
-		D8D5ABFA17E265530029F7E4 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		D8D5ABFC17E265530029F7E4 /* lsusb_iokit.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = lsusb_iokit.1; sourceTree = "<group>"; };
 		D8D5AC0317E267D30029F7E4 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -39,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52521F8A18D70B61006669A1 /* Foundation.framework in Frameworks */,
 				D8D5AC0417E267D30029F7E4 /* IOKit.framework in Frameworks */,
 				D8D5ABF817E265530029F7E4 /* CoreFoundation.framework in Frameworks */,
 			);
@@ -50,7 +54,6 @@
 		D8D5ABEB17E265530029F7E4 = {
 			isa = PBXGroup;
 			children = (
-				D8D5AC0317E267D30029F7E4 /* IOKit.framework */,
 				D8D5ABF917E265530029F7E4 /* lsusb-iokit */,
 				D8D5ABF617E265530029F7E4 /* Frameworks */,
 				D8D5ABF517E265530029F7E4 /* Products */,
@@ -68,6 +71,8 @@
 		D8D5ABF617E265530029F7E4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D8D5AC0317E267D30029F7E4 /* IOKit.framework */,
+				52521F8918D70B61006669A1 /* Foundation.framework */,
 				D8D5ABF717E265530029F7E4 /* CoreFoundation.framework */,
 			);
 			name = Frameworks;
@@ -76,8 +81,9 @@
 		D8D5ABF917E265530029F7E4 /* lsusb-iokit */ = {
 			isa = PBXGroup;
 			children = (
-				D8D5ABFA17E265530029F7E4 /* main.c */,
 				D8D5ABFC17E265530029F7E4 /* lsusb_iokit.1 */,
+				52521F8618D709B0006669A1 /* USBVendors.txt */,
+				5245791F18D4AB5E00DEE6D0 /* lsusb.m */,
 			);
 			path = "lsusb-iokit";
 			sourceTree = "<group>";
@@ -133,7 +139,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D8D5ABFB17E265530029F7E4 /* main.c in Sources */,
+				5245792018D4AB5E00DEE6D0 /* lsusb.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
